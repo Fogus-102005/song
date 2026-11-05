@@ -223,12 +223,12 @@
       </select>
     </div>
 
-    <!-- เลือกระดับความเร็วคาราโอเกะ -->
+    <!-- เลือกระดับความเร็วในการเลื่อนเนื้อเพลง -->
     <div class="control-group">
       <select id="speed-selector">
-        <option value="1.5">🐢 ความเร็ว: ช้า (ฝึกร้อง)</option>
-        <option value="1.0" selected>🚶‍♂️ ความเร็ว: ปกติ</option>
-        <option value="0.7">🏃‍♂️ ความเร็ว: เร็ว (ท้าทาย)</option>
+        <option value="0.7">🐢 เนื้อเพลงเลื่อน: ช้า (0.7x)</option>
+        <option value="1.0" selected>🚶‍♂️ เนื้อเพลงเลื่อน: ปกติ (1.0x)</option>
+        <option value="1.5">🏃‍♂️ เนื้อเพลงเลื่อน: เร็ว (1.5x)</option>
       </select>
     </div>
   </div>
@@ -245,6 +245,7 @@
   <div class="timer-bar">
     <div class="timer-fill" id="timer-fill"></div>
   </div>
+  <!-- เวลาร้องฟิกซ์ที่ 20 วินาทีเสมอ -->
   <div style="text-align: right; font-size: 12px; margin-top: -8px; margin-bottom: 10px;" id="time-text">20 วินาที</div>
 
   <!-- กล่องแสดงผลแหกคีย์ Real-time -->
@@ -279,12 +280,13 @@
 </div>
 
 <script>
-  // ฐานข้อมูล 3 เพลงหลัก
+  // ฐานข้อมูล 3 เพลงหลัก (ความยาวเกม 20 วินาทีเท่ากันหมด)
+  const GAME_DURATION = 20;
+
   const songsData = [
     {
       id: 0,
       title: "ไก่ย่างถูกเผา",
-      baseDuration: 18,
       keys: {
         male: { targetHz: 147, minHz: 135, maxHz: 157, label: "D3 (ชาย)" },
         female: { targetHz: 294, minHz: 280, maxHz: 308, label: "D4 (หญิง)" }
@@ -299,7 +301,6 @@
     {
       id: 1,
       title: "รถตุ๊กตุ๊ก",
-      baseDuration: 18,
       keys: {
         male: { targetHz: 130, minHz: 120, maxHz: 140, label: "C3 (ชาย)" },
         female: { targetHz: 262, minHz: 248, maxHz: 276, label: "C4 (หญิง)" }
@@ -314,7 +315,6 @@
     {
       id: 2,
       title: "ระบำชาวเกาะ",
-      baseDuration: 18,
       keys: {
         male: { targetHz: 165, minHz: 152, maxHz: 175, label: "E3 (ชาย)" },
         female: { targetHz: 330, minHz: 315, maxHz: 345, label: "E4 (หญิง)" }
@@ -330,12 +330,11 @@
 
   let currentSongIdx = 0;
   let currentGender = 'male';
-  let currentDuration = 18; 
   
   let audioCtx, analyser, stream, dataArray;
   let isRunning = false;
   let gameTimer = null;
-  let timeLeft = 0;
+  let timeLeft = GAME_DURATION;
   let totalFrames = 0;
   let goodFrames = 0;
   let offKeyCount = 0;
@@ -372,15 +371,25 @@
     });
   }
 
-  // อัปเดตเลื่อนเนื้อเพลง
+  // อัปเดตเลื่อนเนื้อเพลงตามความเร็วที่เลือก (เวลาจริง 20 วิ แต่ความเร็วเลื่อนเนื้อเปลี่ยนไป)
   function updateKaraoke(timeLeftLocal) {
     if (!isRunning) return;
-    let elapsedTime = currentDuration - timeLeftLocal;
+    
+    // เวลาที่ผ่านไปจริงๆ (จาก 20 วิ)
+    let actualElapsedTime = GAME_DURATION - timeLeftLocal;
+    
+    // เอาเวลาที่ผ่านไป มาคูณกับความเร็ว (เช่น เร็ว 1.5x จะทำให้รู้สึกเหมือนเวลาผ่านไปไวขึ้นสำหรับเนื้อเพลง)
+    let speedMult = parseFloat(speedSelector.value);
+    let lyricElapsedTime = actualElapsedTime * speedMult;
+
     let linesArray = songsData[currentSongIdx].lines;
     let totalLines = linesArray.length;
     
-    let timePerLine = currentDuration / totalLines;
-    let currentLineIdx = Math.floor(elapsedTime / timePerLine);
+    // เวลาปกติที่จะใช้ต่อ 1 บรรทัด (ถ้าร้องสปีด 1.0)
+    let timePerLine = GAME_DURATION / totalLines;
+    
+    // คำนวณว่าตอนนี้ควรไฮไลต์บรรทัดไหน
+    let currentLineIdx = Math.floor(lyricElapsedTime / timePerLine);
     if (currentLineIdx >= totalLines) currentLineIdx = totalLines - 1;
 
     document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
@@ -391,20 +400,18 @@
     }
   }
 
-  // โหลดการตั้งค่า
+  // โหลดการตั้งค่าเริ่มต้นก่อนกดเริ่ม
   function loadSongSettings() {
     let song = songsData[currentSongIdx];
     let keyInfo = song.keys[currentGender];
-    
-    let speedMult = parseFloat(speedSelector.value);
-    currentDuration = Math.round(song.baseDuration * speedMult);
     
     songNameDisplay.innerText = song.title;
     targetDetailDisplay.innerText = `คีย์: ${keyInfo.label} | ช่วงเสียง: ${keyInfo.minHz} - ${keyInfo.maxHz} Hz`;
     
     renderLyrics();
     
-    timeLeft = currentDuration;
+    // เวลารีเซ็ตกลับเป็น 20 วินาทีเสมอ
+    timeLeft = GAME_DURATION;
     timeText.innerText = `${timeLeft} วินาที`;
     timerFill.style.width = "100%";
     feedbackBox.innerText = "พร้อมแล้วกดเริ่มจับเสียง!";
@@ -446,15 +453,12 @@
   // กดเริ่มจับเสียง
   startBtn.addEventListener('click', async () => {
     try {
-      // สร้าง context ใหม่ถ้ายังไม่มี
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       
-      // ขออนุญาตไมโครโฟน
       stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
       
-      // เช็คการ resume context
       if (audioCtx.state === 'suspended') {
         await audioCtx.resume();
       }
@@ -480,7 +484,7 @@
 
       gameTimer = setInterval(() => {
         timeLeft--;
-        let pct = (timeLeft / currentDuration) * 100;
+        let pct = (timeLeft / GAME_DURATION) * 100;
         timerFill.style.width = Math.max(0, pct) + "%";
         timeText.innerText = `${timeLeft} วินาที`;
 
@@ -494,7 +498,7 @@
       updatePitch();
     } catch (err) {
       console.error(err);
-      alert("ไม่สามารถเปิดไมโครโฟนได้ กรุณาตรวจสอบการอนุญาตสิทธิ์ (Permission) ของเบราว์เซอร์ หรือแน่ใจว่ารันผ่าน https:// หรือ localhost");
+      alert("ไม่สามารถเปิดไมโครโฟนได้ กรุณาตรวจสอบการอนุญาตสิทธิ์ (Permission) ของเบราว์เซอร์");
     }
   });
 
