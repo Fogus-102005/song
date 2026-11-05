@@ -209,8 +209,8 @@
     <!-- เลือกคีย์ ชาย / หญิง -->
     <div class="control-group">
       <select id="gender-selector">
-        <option value="male">👨 คีย์ผู้ชาย (โทนเสียงต่ำ)</option>
-        <option value="female">👩 คีย์ผู้หญิง (โทนเสียงสูง)</option>
+        <option value="male">👨 คีย์ผู้ชาย (โทนเสียงกลาง-ต่ำ)</option>
+        <option value="female">👩 คีย์ผู้หญิง (โทนเสียงกลาง-สูง)</option>
       </select>
     </div>
 
@@ -234,9 +234,9 @@
   </div>
   
   <div class="target-box" style="margin-top: 10px;">
-    <div class="target-title">เป้าหมายคีย์เพลงนี้</div>
+    <div class="target-title">ช่วงเสียงที่จับคะแนนเพลงนี้</div>
     <div class="target-note" id="song-name-display">ไก่ย่างถูกเผา</div>
-    <div class="target-detail" id="target-detail-display">คีย์: ชาย | ช่วงเสียง: 135 - 155 Hz</div>
+    <div class="target-detail" id="target-detail-display">คีย์: ชาย | ช่วงเสียง: 110 - 180 Hz</div>
   </div>
 
   <!-- กล่องเนื้อเพลงคาราโอเกะแบบเลื่อนอัตโนมัติ -->
@@ -280,16 +280,17 @@
 </div>
 
 <script>
-  // ฐานข้อมูล 3 เพลงหลัก (ความยาวเกม 20 วินาทีเท่ากันหมด)
+  // ความยาวเกม 20 วินาทีเท่ากันหมด
   const GAME_DURATION = 20;
 
+  // ปรับช่วง minHz - maxHz ให้กว้างขึ้นเพื่อให้ร้องผ่านได้จริง (ยืดหยุ่นต่อเสียงสั่นและการเอื้อน)
   const songsData = [
     {
       id: 0,
       title: "ไก่ย่างถูกเผา",
       keys: {
-        male: { targetHz: 147, minHz: 135, maxHz: 157, label: "D3 (ชาย)" },
-        female: { targetHz: 294, minHz: 280, maxHz: 308, label: "D4 (หญิง)" }
+        male: { targetHz: 147, minHz: 110, maxHz: 180, label: "ผู้ชาย" },
+        female: { targetHz: 294, minHz: 230, maxHz: 350, label: "ผู้หญิง" }
       },
       lines: [
         "[D] ไก่ย่างถูกเผา [D] ไก่ย่างถูกเผา",
@@ -302,22 +303,22 @@
       id: 1,
       title: "รถตุ๊กตุ๊ก",
       keys: {
-        male: { targetHz: 130, minHz: 120, maxHz: 140, label: "C3 (ชาย)" },
-        female: { targetHz: 262, minHz: 248, maxHz: 276, label: "C4 (หญิง)" }
+        male: { targetHz: 130, minHz: 100, maxHz: 170, label: "ผู้ชาย" },
+        female: { targetHz: 262, minHz: 210, maxHz: 330, label: "ผู้หญิง" }
       },
       lines: [
-        "[C] ขับรถตุ๊กตุ๊ก [G] บรรทุกถ่าน",
-        "[C] รถตุ๊กตุ๊กชักกระตุก",
-        "[F] ชักกระตุก [G] ชักกระตุก",
-        "[C] ขับรถตุ๊กตุ๊ก [C] บรรทุกถ่าน"
+        "[C] รถตุ๊กตุ๊ก [G] บรรทุกถ่าน",
+        "[C] รถขึ้นสะพาน รถลงสะพาน",
+        "[F] รถเลี้ยวซ้าย [G] รถเลี้ยวขวา",
+        "[C] ชักกระตุก ชักกระตุก ชักกระตุก ชักกระตุก"
       ]
     },
     {
       id: 2,
       title: "ระบำชาวเกาะ",
       keys: {
-        male: { targetHz: 165, minHz: 152, maxHz: 175, label: "E3 (ชาย)" },
-        female: { targetHz: 330, minHz: 315, maxHz: 345, label: "E4 (หญิง)" }
+        male: { targetHz: 165, minHz: 120, maxHz: 195, label: "ผู้ชาย" },
+        female: { targetHz: 330, minHz: 250, maxHz: 380, label: "ผู้หญิง" }
       },
       lines: [
         "[E] รำระบำชาวเกาะ",
@@ -371,24 +372,18 @@
     });
   }
 
-  // อัปเดตเลื่อนเนื้อเพลงตามความเร็วที่เลือก (เวลาจริง 20 วิ แต่ความเร็วเลื่อนเนื้อเปลี่ยนไป)
+  // อัปเดตเลื่อนเนื้อเพลงตามความเร็วที่เลือก
   function updateKaraoke(timeLeftLocal) {
     if (!isRunning) return;
     
-    // เวลาที่ผ่านไปจริงๆ (จาก 20 วิ)
     let actualElapsedTime = GAME_DURATION - timeLeftLocal;
-    
-    // เอาเวลาที่ผ่านไป มาคูณกับความเร็ว (เช่น เร็ว 1.5x จะทำให้รู้สึกเหมือนเวลาผ่านไปไวขึ้นสำหรับเนื้อเพลง)
     let speedMult = parseFloat(speedSelector.value);
     let lyricElapsedTime = actualElapsedTime * speedMult;
 
     let linesArray = songsData[currentSongIdx].lines;
     let totalLines = linesArray.length;
-    
-    // เวลาปกติที่จะใช้ต่อ 1 บรรทัด (ถ้าร้องสปีด 1.0)
     let timePerLine = GAME_DURATION / totalLines;
     
-    // คำนวณว่าตอนนี้ควรไฮไลต์บรรทัดไหน
     let currentLineIdx = Math.floor(lyricElapsedTime / timePerLine);
     if (currentLineIdx >= totalLines) currentLineIdx = totalLines - 1;
 
@@ -400,17 +395,16 @@
     }
   }
 
-  // โหลดการตั้งค่าเริ่มต้นก่อนกดเริ่ม
+  // โหลดการตั้งค่าเริ่มต้น
   function loadSongSettings() {
     let song = songsData[currentSongIdx];
     let keyInfo = song.keys[currentGender];
     
     songNameDisplay.innerText = song.title;
-    targetDetailDisplay.innerText = `คีย์: ${keyInfo.label} | ช่วงเสียง: ${keyInfo.minHz} - ${keyInfo.maxHz} Hz`;
+    targetDetailDisplay.innerText = `คีย์: ${keyInfo.label} | ขอบเขตเสียง: ${keyInfo.minHz} - ${keyInfo.maxHz} Hz`;
     
     renderLyrics();
     
-    // เวลารีเซ็ตกลับเป็น 20 วินาทีเสมอ
     timeLeft = GAME_DURATION;
     timeText.innerText = `${timeLeft} วินาที`;
     timerFill.style.width = "100%";
@@ -515,7 +509,7 @@
       totalFrames++;
 
       if (hz >= keyInfo.minHz && hz <= keyInfo.maxHz) {
-        feedbackBox.innerText = "🎯 เสียงตรงคีย์แล้ว!";
+        feedbackBox.innerText = "🎯 เสียงอยู่ในคีย์แล้ว!";
         feedbackBox.style.background = "rgba(34, 197, 94, 0.2)";
         feedbackBox.style.color = "var(--success-color)";
         goodFrames++;
@@ -569,7 +563,7 @@
     detailText.innerText = `มีช่วงร้องหลุด/แหกคีย์ทั้งหมด ${offKeyCount} ครั้ง`;
 
     if (finalScore >= 60) {
-      title.innerText = "🎉 เสียงดีตรงคีย์!";
+      title.innerText = "🎉 เสียงดีอยู่ในคีย์!";
       title.style.color = "var(--success-color)";
     } else {
       title.innerText = "❌ หลุดคีย์บ่อย";
