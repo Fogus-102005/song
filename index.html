@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singing Quest V3 - คาราโอเกะ & ปรับความเร็วได้</title>
+  <title>Singing Quest - คาราโอเกะจับคีย์เสียง</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -180,8 +180,8 @@
       margin-top: 6px;
     }
 
-    .btn-listen { background: #0284c7; }
     .btn-start { background: var(--success-color); }
+    .btn-start:disabled { background: #475569; cursor: not-allowed; }
 
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -203,7 +203,7 @@
 <body>
 
 <div class="card-container">
-  <h2 style="margin-top:0; color: var(--primary-color);">🎤 Singing Quest V3</h2>
+  <h2 style="margin-top:0; color: var(--primary-color);">🎤 Singing Quest</h2>
   
   <div class="header-controls">
     <!-- เลือกคีย์ ชาย / หญิง -->
@@ -232,9 +232,6 @@
       </select>
     </div>
   </div>
-
-  <!-- ปุ่มฟังตัวอย่างเสียง -->
-  <button id="listen-btn" class="btn btn-listen">🎧 ฟังตัวอย่างเสียง (คีย์เป้าหมาย)</button>
   
   <div class="target-box" style="margin-top: 10px;">
     <div class="target-title">เป้าหมายคีย์เพลงนี้</div>
@@ -282,7 +279,7 @@
 </div>
 
 <script>
-  // ฐานข้อมูล 3 เพลงหลัก (มีคีย์ฝังในเนื้อเพลง)
+  // ฐานข้อมูล 3 เพลงหลัก
   const songsData = [
     {
       id: 0,
@@ -333,7 +330,7 @@
 
   let currentSongIdx = 0;
   let currentGender = 'male';
-  let currentDuration = 18; // เวลาที่จะใช้จริงหลังคำนวณความเร็ว
+  let currentDuration = 18; 
   
   let audioCtx, analyser, stream, dataArray;
   let isRunning = false;
@@ -358,9 +355,8 @@
   const scoreDisplay = document.getElementById('score-display');
   const offkeyCountDisplay = document.getElementById('offkey-count');
   const startBtn = document.getElementById('start-btn');
-  const listenBtn = document.getElementById('listen-btn');
 
-  // สร้างองค์ประกอบเนื้อเพลงสำหรับคาราโอเกะ (แปลงวงเล็บคอร์ดให้เป็นโค้ดสี)
+  // สร้างเนื้อเพลงคาราโอเกะ
   function renderLyrics() {
     lyricDisplay.innerHTML = "";
     let linesArray = songsData[currentSongIdx].lines;
@@ -369,4 +365,223 @@
       div.className = "lyric-line";
       div.id = "lyric-" + index;
       
-      // หาแพทเทิร์น [C], [D], ฯลฯ แล้ว
+      let formattedLine = lineText.replace(/\[(.*?)\]/g, '<span class="chord">[$1]</span>');
+      div.innerHTML = formattedLine;
+      
+      lyricDisplay.appendChild(div);
+    });
+  }
+
+  // อัปเดตเลื่อนเนื้อเพลง
+  function updateKaraoke(timeLeftLocal) {
+    if (!isRunning) return;
+    let elapsedTime = currentDuration - timeLeftLocal;
+    let linesArray = songsData[currentSongIdx].lines;
+    let totalLines = linesArray.length;
+    
+    let timePerLine = currentDuration / totalLines;
+    let currentLineIdx = Math.floor(elapsedTime / timePerLine);
+    if (currentLineIdx >= totalLines) currentLineIdx = totalLines - 1;
+
+    document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+    let activeLine = document.getElementById('lyric-' + currentLineIdx);
+    if (activeLine) {
+      activeLine.classList.add('active');
+      lyricDisplay.scrollTop = activeLine.offsetTop - (lyricDisplay.offsetHeight / 2) + (activeLine.offsetHeight / 2);
+    }
+  }
+
+  // โหลดการตั้งค่า
+  function loadSongSettings() {
+    let song = songsData[currentSongIdx];
+    let keyInfo = song.keys[currentGender];
+    
+    let speedMult = parseFloat(speedSelector.value);
+    currentDuration = Math.round(song.baseDuration * speedMult);
+    
+    songNameDisplay.innerText = song.title;
+    targetDetailDisplay.innerText = `คีย์: ${keyInfo.label} | ช่วงเสียง: ${keyInfo.minHz} - ${keyInfo.maxHz} Hz`;
+    
+    renderLyrics();
+    
+    timeLeft = currentDuration;
+    timeText.innerText = `${timeLeft} วินาที`;
+    timerFill.style.width = "100%";
+    feedbackBox.innerText = "พร้อมแล้วกดเริ่มจับเสียง!";
+    feedbackBox.style.background = "rgba(255,255,255,0.05)";
+    feedbackBox.style.color = "white";
+    currentHzDisplay.innerText = "-- Hz";
+    scoreDisplay.innerText = "0%";
+    offkeyCountDisplay.innerText = "0 ครั้ง";
+    offKeyCount = 0;
+  }
+
+  genderSelector.addEventListener('change', (e) => { currentGender = e.target.value; loadSongSettings(); });
+  songSelector.addEventListener('change', (e) => { currentSongIdx = parseInt(e.target.value); loadSongSettings(); });
+  speedSelector.addEventListener('change', loadSongSettings);
+
+  // อัลกอริทึม Auto-correlation
+  function autoCorrelate(buf, sampleRate) {
+    let SIZE = buf.length, rms = 0;
+    for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < 0.015) return -1;
+    
+    let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+    for (let i = 0; i < SIZE / 2; i++) { if (Math.abs(buf[i]) < thres) { r1 = i; break; } }
+    for (let i = 1; i < SIZE / 2; i++) { if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; } }
+    buf = buf.slice(r1, r2); SIZE = buf.length;
+    let c = new Array(SIZE).fill(0);
+    for (let i = 0; i < SIZE; i++) {
+      for (let j = 0; j < SIZE - i; j++) c[i] += buf[j] * buf[j + i];
+    }
+    let d = 0; while (c[d] > c[d + 1]) d++;
+    let maxval = -1, maxpos = -1;
+    for (let i = d; i < SIZE; i++) {
+      if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+    }
+    return sampleRate / maxpos;
+  }
+
+  // กดเริ่มจับเสียง
+  startBtn.addEventListener('click', async () => {
+    try {
+      // สร้าง context ใหม่ถ้ายังไม่มี
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      // ขออนุญาตไมโครโฟน
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      
+      // เช็คการ resume context
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+      
+      let source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      
+      dataArray = new Float32Array(analyser.fftSize);
+
+      totalFrames = 0; goodFrames = 0; offKeyCount = 0;
+      genderSelector.disabled = true;
+      songSelector.disabled = true;
+      speedSelector.disabled = true;
+      
+      isRunning = true;
+      startBtn.disabled = true;
+      startBtn.innerText = "กำลังจับเสียงร้อง...";
+
+      updateKaraoke(timeLeft);
+
+      gameTimer = setInterval(() => {
+        timeLeft--;
+        let pct = (timeLeft / currentDuration) * 100;
+        timerFill.style.width = Math.max(0, pct) + "%";
+        timeText.innerText = `${timeLeft} วินาที`;
+
+        updateKaraoke(timeLeft);
+
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+
+      updatePitch();
+    } catch (err) {
+      console.error(err);
+      alert("ไม่สามารถเปิดไมโครโฟนได้ กรุณาตรวจสอบการอนุญาตสิทธิ์ (Permission) ของเบราว์เซอร์ หรือแน่ใจว่ารันผ่าน https:// หรือ localhost");
+    }
+  });
+
+  function updatePitch() {
+    if (!isRunning) return;
+    
+    analyser.getFloatTimeDomainData(dataArray);
+    let pitch = autoCorrelate(dataArray, audioCtx.sampleRate);
+    let keyInfo = songsData[currentSongIdx].keys[currentGender];
+
+    if (pitch !== -1) {
+      let hz = Math.round(pitch);
+      currentHzDisplay.innerText = hz + " Hz";
+      totalFrames++;
+
+      if (hz >= keyInfo.minHz && hz <= keyInfo.maxHz) {
+        feedbackBox.innerText = "🎯 เสียงตรงคีย์แล้ว!";
+        feedbackBox.style.background = "rgba(34, 197, 94, 0.2)";
+        feedbackBox.style.color = "var(--success-color)";
+        goodFrames++;
+        lastStateWasOffkey = false;
+      } else {
+        if (hz > keyInfo.maxHz) {
+          feedbackBox.innerText = "⚠️ แหกคีย์! เสียงสูงเกินไป";
+        } else {
+          feedbackBox.innerText = "⚠️ แหกคีย์! เสียงต่ำเกินไป";
+        }
+        feedbackBox.style.background = "rgba(239, 68, 68, 0.25)";
+        feedbackBox.style.color = "var(--danger-color)";
+
+        if (!lastStateWasOffkey) {
+          offKeyCount++;
+          offkeyCountDisplay.innerText = offKeyCount + " ครั้ง";
+          lastStateWasOffkey = true;
+        }
+      }
+
+      let percent = Math.round((goodFrames / totalFrames) * 100);
+      scoreDisplay.innerText = percent + "%";
+    }
+    
+    requestAnimationFrame(updatePitch);
+  }
+
+  function endGame() {
+    isRunning = false;
+    clearInterval(gameTimer);
+    
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+    }
+
+    startBtn.disabled = false;
+    startBtn.innerText = "🎙️ กดเพื่อเริ่มจับเสียงร้อง";
+    genderSelector.disabled = false;
+    songSelector.disabled = false;
+    speedSelector.disabled = false;
+
+    let finalScore = totalFrames > 0 ? Math.round((goodFrames / totalFrames) * 100) : 0;
+    
+    let modal = document.getElementById('result-modal');
+    let title = document.getElementById('modal-title');
+    let scoreText = document.getElementById('modal-score');
+    let detailText = document.getElementById('modal-detail');
+    let closeBtn = document.getElementById('close-modal-btn');
+
+    scoreText.innerText = finalScore + "%";
+    detailText.innerText = `มีช่วงร้องหลุด/แหกคีย์ทั้งหมด ${offKeyCount} ครั้ง`;
+
+    if (finalScore >= 60) {
+      title.innerText = "🎉 เสียงดีตรงคีย์!";
+      title.style.color = "var(--success-color)";
+    } else {
+      title.innerText = "❌ หลุดคีย์บ่อย";
+      title.style.color = "var(--danger-color)";
+    }
+
+    closeBtn.onclick = () => { 
+      modal.style.display = "none"; 
+      loadSongSettings(); 
+    };
+    modal.style.display = "flex";
+  }
+
+  // เรียกใช้ครั้งแรกตอนเปิดหน้าเว็บ
+  loadSongSettings();
+</script>
+
+</body>
+</html>
