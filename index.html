@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pitch & Sing Game - คาราโอเกะ & จังหวะดนตรี</title>
+  <title>Singing Quest V2 - แอปฝึกร้องเพลง & จับตัวแหกคีย์</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -25,7 +25,7 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      padding: 20px;
+      padding: 16px;
       box-sizing: border-box;
     }
 
@@ -33,7 +33,7 @@
       background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
-      padding: 24px;
+      padding: 20px;
       width: 100%;
       max-width: 480px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -57,29 +57,16 @@
       gap: 8px;
     }
 
-    .level-badge {
-      background: linear-gradient(135deg, #f59e0b, #ef4444);
-      color: white;
-      font-size: 13px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
     select, .btn-small {
       background: var(--card-bg);
       color: white;
       border: 1px solid var(--primary-color);
-      padding: 6px 10px;
+      padding: 8px 10px;
       border-radius: 8px;
       font-size: 14px;
       outline: none;
       cursor: pointer;
-    }
-    
-    .btn-small:hover {
-      background: rgba(56, 189, 248, 0.2);
+      width: 100%;
     }
 
     .target-box {
@@ -87,88 +74,71 @@
       border: 2px dashed var(--primary-color);
       border-radius: 16px;
       padding: 15px;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
-    .target-title { font-size: 14px; color: var(--text-muted); }
-    .target-note { font-size: 36px; font-weight: 900; color: #fde047; margin: 5px 0; text-shadow: 0 0 10px rgba(253, 224, 71, 0.3); }
+    .target-title { font-size: 13px; color: var(--text-muted); }
+    .target-note { font-size: 26px; font-weight: 800; color: #fde047; margin: 4px 0; }
     .target-detail { font-size: 13px; color: var(--primary-color); }
 
     .lyric-box {
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.4);
       border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 20px;
-      height: 120px;
-      overflow-y: hidden;
+      padding: 12px;
+      margin-bottom: 15px;
+      min-height: 70px;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      position: relative;
-      scroll-behavior: smooth;
-    }
-
-    .lyric-line {
-      font-size: 16px;
-      color: var(--text-muted);
-      margin: 8px 0;
-      transition: all 0.3s ease;
-      opacity: 0.5;
-    }
-
-    .lyric-line.active {
-      font-size: 20px;
-      font-weight: bold;
+      justify-content: center;
       color: #fde047;
-      opacity: 1;
-      text-shadow: 0 0 10px rgba(253, 224, 71, 0.5);
-      transform: scale(1.1);
+      font-size: 18px;
+      font-weight: bold;
     }
 
     .timer-bar {
-      height: 10px;
+      height: 8px;
       background: #334155;
-      border-radius: 10px;
+      border-radius: 8px;
       overflow: hidden;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .timer-fill {
       height: 100%;
       background: var(--primary-color);
       width: 100%;
-      transition: width 1s linear;
+      transition: width 0.2s linear;
     }
 
     .feedback-box {
-      height: 60px;
+      height: 55px;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
       border-radius: 12px;
       background: rgba(255,255,255,0.05);
       transition: all 0.2s ease;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .metrics {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
     .metric-card {
       background: rgba(15, 23, 42, 0.4);
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 8px;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .btn {
-      padding: 16px;
+      padding: 14px;
       font-size: 16px;
       font-weight: 700;
       border: none;
@@ -177,11 +147,11 @@
       transition: all 0.2s ease;
       width: 100%;
       color: white;
+      margin-top: 6px;
     }
 
-    .btn-start { background: var(--success-color); box-shadow: 0 4px 15px rgba(34,197,94,0.3); }
-    .btn-next { background: var(--primary-color); display: none; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-listen { background: #0284c7; }
+    .btn-start { background: var(--success-color); }
 
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -192,7 +162,7 @@
     .modal-content {
       background: var(--card-bg);
       border-radius: 20px;
-      padding: 30px;
+      padding: 24px;
       width: 85%;
       max-width: 320px;
       text-align: center;
@@ -203,214 +173,121 @@
 <body>
 
 <div class="card-container">
+  <h2 style="margin-top:0; color: var(--primary-color);">🎤 Singing Quest V2</h2>
+  
   <div class="header-controls">
+    <!-- เลือกเพลง (คีย์ ช/ญ ชัดเจน) -->
     <div class="control-group">
-      <div class="level-badge" id="level-display">ด่านที่ 1 / 8</div>
-      <select id="level-selector" style="flex: 1;">
-        <option value="0">ด่าน 1: โด (C3)</option>
-        <option value="1">ด่าน 2: เร (D3)</option>
-        <option value="2">ด่าน 3: มี (E3)</option>
-        <option value="3">ด่าน 4: ฟา (F3)</option>
-        <option value="4">ด่าน 5: ซอล (G3)</option>
-        <option value="5">ด่าน 6: ลา (A3)</option>
-        <option value="6">ด่าน 7: ที (B3)</option>
-        <option value="7">ด่าน 8: โดสูง (C4)</option>
-      </select>
-    </div>
-    
-    <div class="control-group" style="margin-top: 5px;">
-      <select id="song-selector" style="flex: 1;">
-        <option value="0">เมาคลีล่าสัตว์</option>
-        <option value="1">ไก่ย่างถูกเผา</option>
-        <option value="2">แจวเรือ</option>
-        <option value="3">รถตุ๊กตุ๊ก</option>
-        <option value="4">ระบำชาวเกาะ</option>
-        <option value="5">ในหมู่อาซี</option>
-        <option value="6">แมงป่องตัวดำ</option>
-        <option value="7">มดเล็ก</option>
-        <option value="8">กิจกรรม</option>
-        <option value="9">พัดลมเพดาน</option>
+      <select id="song-selector">
+        <option value="0">🎵 เพลงเมาคลีล่าสัตว์ (คีย์ ชาย - C3)</option>
+        <option value="1">🎵 เพลงไก่ย่างถูกเผา (คีย์ ชาย - D3)</option>
+        <option value="2">🎵 เพลงรถตุ๊กตุ๊ก (คีย์ หญิง - C4)</option>
+        <option value="3">🎵 เพลงแจวเรือ (คีย์ หญิง - D4)</option>
       </select>
     </div>
 
-    <div class="control-group" style="margin-top: 5px;">
+    <!-- เลือกจังหวะ -->
+    <div class="control-group">
       <select id="rhythm-selector" style="flex: 1;">
         <option value="3cha">🥁 จังหวะ: 3 ช่า</option>
         <option value="conga">🪘 จังหวะ: คองก้า</option>
       </select>
-      <button id="bgm-btn" class="btn-small" style="width: 100px;">▶️ เปิดจังหวะ</button>
+      <button id="bgm-btn" class="btn-small" style="width: 110px;">▶️ เปิดจังหวะ</button>
     </div>
   </div>
+
+  <!-- ปุ่มฟังตัวอย่างเสียงเมโลดี้ -->
+  <button id="listen-btn" class="btn btn-listen">🎧 ฟังตัวอย่างเสียง (ร้องตามคีย์นี้)</button>
   
-  <div class="target-box">
-    <div class="target-title">ร้องเสียงให้อยู่ในระดับคีย์นี้</div>
-    <div class="target-note" id="target-note-display">โด (Do)</div>
-    <div class="target-detail" id="target-detail-display">คีย์สากล: C3</div>
+  <div class="target-box" style="margin-top: 10px;">
+    <div class="target-title">คีย์เป้าหมายของเพลงนี้</div>
+    <div class="target-note" id="song-name-display">เมาคลีล่าสัตว์ (คีย์ ช)</div>
+    <div class="target-detail" id="target-detail-display">คีย์: C3 | ช่วงเสียง: 120 - 140 Hz</div>
   </div>
 
-  <div class="lyric-box" id="lyric-display"></div>
+  <div class="lyric-box" id="lyric-display">"เมาคลีล่าสัตว์ เมาคลีล่าสัตว์..."</div>
 
   <div class="timer-bar">
     <div class="timer-fill" id="timer-fill"></div>
   </div>
-  <div style="text-align: right; font-size: 12px; margin-top: -10px; margin-bottom: 10px;" id="time-text">25 วินาที</div>
+  <div style="text-align: right; font-size: 12px; margin-top: -8px; margin-bottom: 10px;" id="time-text">20 วินาที</div>
 
-  <div class="feedback-box" id="feedback-box">รอเริ่มเกม...</div>
+  <!-- กล่องแสดงตัวแหกคีย์ Real-time -->
+  <div class="feedback-box" id="feedback-box">พร้อมแล้วกดเริ่มจับเสียง!</div>
   
   <div class="metrics">
     <div class="metric-card">
-      <span style="font-size: 11px; color: var(--text-muted)">เสียงคุณตอนนี้</span>
-      <div id="current-hz" style="font-size: 20px; font-weight: bold; color: white;">-- Hz</div>
+      <span style="font-size: 10px; color: var(--text-muted)">เสียงสด</span>
+      <div id="current-hz" style="font-size: 16px; font-weight: bold; color: white;">-- Hz</div>
     </div>
     <div class="metric-card">
-      <span style="font-size: 11px; color: var(--text-muted)">หลอดความแม่นยำ</span>
-      <div id="score-display" style="font-size: 20px; font-weight: bold; color: var(--success-color);">0%</div>
+      <span style="font-size: 10px; color: var(--text-muted)">ความแม่นยำ</span>
+      <div id="score-display" style="font-size: 16px; font-weight: bold; color: var(--success-color);">0%</div>
+    </div>
+    <div class="metric-card">
+      <span style="font-size: 10px; color: var(--text-muted)">แหกคีย์ไป</span>
+      <div id="offkey-count" style="font-size: 16px; font-weight: bold; color: var(--danger-color);">0 ครั้ง</div>
     </div>
   </div>
 
-  <button id="start-btn" class="btn btn-start">🎤 กดเพื่อเริ่มจับเสียง</button>
-  <button id="next-btn" class="btn btn-next">➡️ ไปด่านถัดไป</button>
+  <button id="start-btn" class="btn btn-start">🎙️ กดเพื่อเริ่มจับเสียงร้อง</button>
 </div>
 
+<!-- Modal สรุปผล -->
 <div id="result-modal" class="modal-overlay" style="display: none;">
   <div class="modal-content">
-    <h1 id="modal-title" style="margin-top:0;">🎉 ผ่านด่าน!</h1>
-    <h2 id="modal-score" style="font-size: 45px; color: #fde047; margin: 10px 0;">80%</h2>
-    <button id="close-modal-btn" class="btn btn-start" style="margin-top: 20px;">ลุยต่อ!</button>
+    <h1 id="modal-title" style="margin-top:0;">🎉 ผลการประเมิน</h1>
+    <h2 id="modal-score" style="font-size: 40px; color: #fde047; margin: 10px 0;">80%</h2>
+    <p id="modal-detail" style="font-size: 14px; color: var(--text-muted);">ร้องตรงคีย์ได้ดี!</p>
+    <button id="close-modal-btn" class="btn btn-start" style="margin-top: 15px;">ตกลง</button>
   </div>
 </div>
 
 <script>
-  const levels = [
-    { id: 1, noteName: "โด (Do)", detail: "คีย์ C3", targetHz: 130, tolerance: 15, time: 25 },
-    { id: 2, noteName: "เร (Re)", detail: "คีย์ D3", targetHz: 147, tolerance: 15, time: 25 },
-    { id: 3, noteName: "มี (Mi)", detail: "คีย์ E3", targetHz: 165, tolerance: 15, time: 25 },
-    { id: 4, noteName: "ฟา (Fa)", detail: "คีย์ F3", targetHz: 175, tolerance: 15, time: 25 },
-    { id: 5, noteName: "ซอล (Sol)", detail: "คีย์ G3", targetHz: 196, tolerance: 15, time: 25 },
-    { id: 6, noteName: "ลา (La)", detail: "คีย์ A3", targetHz: 220, tolerance: 15, time: 25 },
-    { id: 7, noteName: "ที (Ti/Si)", detail: "คีย์ B3", targetHz: 247, tolerance: 15, time: 25 },
-    { id: 8, noteName: "โดสูง (High Do)", detail: "คีย์ C4", targetHz: 262, tolerance: 15, time: 25 }
-  ];
-
-  const songs = [
+  // รายการเพลงที่มีคีย์ ชาย/หญิง ชัดเจน
+  const songList = [
     {
       id: 0,
-      lines: [
-        "เมาคลีล่าสัตว์ เมาคลีล่าสัตว์", "ฆ่าแชร์คาน ฆ่าแชร์คาน",
-        "ถลกหนังมันออกมาหมด", "ถลกหนังมันออกมาหมด",
-        "มันฆ่าวัวมันฆ่าควาย", "มันฆ่าวัวมันฆ่าควาย",
-        "เมาคลีล่าสัตว์ เมาคลีล่าสัตว์", "ฆ่าแชร์คาน ฆ่าแชร์คาน", "(วนซ้ำ...)"
-      ]
+      title: "เมาคลีล่าสัตว์ (คีย์ ชาย)",
+      keyName: "C3 (ชาย)",
+      targetHz: 130,
+      minHz: 120,
+      maxHz: 140,
+      lyrics: "เมาคลีล่าสัตว์... ฆ่าแชร์คาน...",
+      duration: 20
     },
     {
       id: 1,
-      lines: [
-        "ไก่ย่างถูกเผา ไก่ย่างถูกเผา", "มันจะถูกไม้เสียบ (อู๊ย!)", "มันจะถูกไม้เสียบ (อู๊ย!)",
-        "เสียบตูดซ้าย เสียบตูดขวา", "ร้อนจริง ๆ ร้อนจริง ๆ ร้อนจริง ๆ",
-        "ไก่ย่างถูกเผา ไก่ย่างถูกเผา", "(วนซ้ำ...)"
-      ]
+      title: "ไก่ย่างถูกเผา (คีย์ ชาย)",
+      keyName: "D3 (ชาย)",
+      targetHz: 147,
+      minHz: 137,
+      maxHz: 157,
+      lyrics: "ไก่ย่างถูกเผา... มันจะถูกไม้เสียบ...",
+      duration: 20
     },
     {
       id: 2,
-      lines: [
-        "แจวมาแจวจ้ำจึก", "น้ำนิ่งไหลลึกนึกถึงคนแจว",
-        "แจวมาแจวจ้ำจึก", "น้ำนิ่งไหลลึกนึกถึงคนแจว",
-        "แจวเรือจะไปซื้อหวี", "ขอเชิญลุกขึ้นมาแจว!",
-        "แจวมาแจวจ้ำจึก", "(วนซ้ำ...)"
-      ]
+      title: "รถตุ๊กตุ๊ก (คีย์ หญิง)",
+      keyName: "C4 (หญิง)",
+      targetHz: 262,
+      minHz: 248,
+      maxHz: 276,
+      lyrics: "ขับรถตุ๊กตุ๊ก... บรรทุกถ่าน...",
+      duration: 20
     },
     {
       id: 3,
-      lines: [
-        "ขับรถตุ๊กตุ๊ก บรรทุกถ่าน",
-        "รถตุ๊กตุ๊กชักกระตุก",
-        "ชักกระตุก ชักกระตุก",
-        "ขับรถตุ๊กตุ๊ก บรรทุกถ่าน",
-        "รถตุ๊กตุ๊กชักกระตุก",
-        "ชักกระตุก ชักกระตุก",
-        "ขับรถตุ๊กตุ๊ก บรรทุกถ่าน",
-        "(วนซ้ำ...)"
-      ]
-    },
-    {
-      id: 4,
-      lines: [
-        "รำระบำชาวเกาะ",
-        "ไพเราะเสนาะจับใจ",
-        "สายน้ำหลั่งไหล",
-        "สายน้ำหลั่งไหล",
-        "กระทบหาดทรายดังครืนครืน",
-        "กระทบหาดทรายดังครืนครืน",
-        "รำระบำชาวเกาะ",
-        "(วนซ้ำ...)"
-      ]
-    },
-    {
-      id: 5,
-      lines: [
-        "ในหมู่อาซี สามัคคีร่วมอยู่",
-        "ต่างคนต่างรู้กันดีว่าเราพี่น้องกัน",
-        "การงานทุกอย่างเราช่วยกันทำ",
-        "เราไม่เว้นว่าง งานทุกอย่าง งานทุกอย่าง",
-        "จะเสร็จโดยง่ายดาย",
-        "ในหมู่อาซี สามัคคีร่วมอยู่",
-        "ต่างคนต่างรู้กันดีว่าเราพี่น้องกัน",
-        "(วนซ้ำ...)"
-      ]
-    },
-    {
-      id: 6,
-      lines: [
-        "แม็งป้อง มีพิษ มีพิษ",
-        "ตัวจิดริดระวังโดนกัด",
-        "สองก้าม หนึ่งหาง ตัวดำ",
-        "สองก้าม หนึ่งหาง ตัวดำ",
-        "จงระวังระวังโดนกัด",
-        "จงระวังระวังโดนกัด",
-        "แมงป่องนั้นมัน เป็นสัตว์อันตราย",
-        "(วนซ้ำ...)"
-      ]
-    },
-    {
-      id: 7,
-      lines: [
-        "มดเล็ก มดตัวเเดงเเดง",
-        "เดินไต่กำเเพงมดเเดงมดเเดง",
-        "มดเล็กนั้นอยู่ทุกที",
-        "มดตัวสีเเดง ตะเเคงไต่ไป",
-        "มดเเดงเราอยู่เป็นฝูง",
-        "ทำงานเป็นทีม นี่เเหละคือ มดเเดง",
-        "(วนซ้ำ...)"
-      ]
-    },
-    {
-      id: 8,
-      lines: [
-        "กิจกรรมเป็นสื่อนำแห่งความสำเร็จ",
-        "กิจกรรมเป็นเหตุสนุกสนาน",
-        "กิจกรรมพาใจเราเบิกบาน",
-        "กิจกรรมสร้างงานและความสามัคคี",
-        "กิจกรรมเป็นสื่อนำแห่งความสำเร็จ",
-        "กิจกรรมเป็นเหตุสนุกสนาน",
-        "(วนซ้ำ...)"
-      ]
-    },
-    {
-      id: 9,
-      lines: [
-        "พัด พัด พัด พัดลม",
-        "พัด พัดลมเพดาน",
-        "เบอร์หนึ่งเบอร์สองเบอร์สาม",
-        "เบอร์หนึ่งเบอร์สองเบอร์สาม",
-        "พัดลมเพดานหมุนเป็นวงกลม",
-        "พัด พัด พัด พัดลม",
-        "พัด พัดลมเพดาน",
-        "(วนซ้ำ...)"
-      ]
+      title: "แจวเรือ (คีย์ หญิง)",
+      keyName: "D4 (หญิง)",
+      targetHz: 294,
+      minHz: 280,
+      maxHz: 308,
+      lyrics: "แจวมาแจวจ้ำจึก... น้ำนิ่งไหลลึก...",
+      duration: 20
     }
   ];
 
-  let currentLevelIdx = 0;
   let currentSongIdx = 0;
   let audioCtx, analyser, stream, dataArray;
   let isRunning = false;
@@ -418,220 +295,64 @@
   let timeLeft = 0;
   let totalFrames = 0;
   let goodFrames = 0;
-  
-  // ==========================================
-  // ระบบเครื่องตีจังหวะ (Drum Synthesizer)
-  // ==========================================
-  let drumCtx;
-  let isBgmPlaying = false;
-  let drumStep = 0;
-  let beatInterval;
+  let offKeyCount = 0;
+  let lastStateWasOffkey = false;
 
-  function createDrumContext() {
-    if (!drumCtx) drumCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (drumCtx.state === 'suspended') drumCtx.resume();
-  }
-
-  function playKick(time) {
-    const osc = drumCtx.createOscillator();
-    const gain = drumCtx.createGain();
-    osc.connect(gain);
-    gain.connect(drumCtx.destination);
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
-    gain.gain.setValueAtTime(1, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
-    osc.start(time);
-    osc.stop(time + 0.5);
-  }
-
-  function playSnare(time) {
-    const noise = drumCtx.createBufferSource();
-    const buffer = drumCtx.createBuffer(1, drumCtx.sampleRate * 0.2, drumCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    noise.buffer = buffer;
-    const noiseFilter = drumCtx.createBiquadFilter();
-    noiseFilter.type = 'highpass';
-    noiseFilter.frequency.value = 1000;
-    const noiseGain = drumCtx.createGain();
-    noiseGain.gain.setValueAtTime(0.7, time);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(drumCtx.destination);
-    noise.start(time);
-  }
-
-  function playHihat(time) {
-    const noise = drumCtx.createBufferSource();
-    const buffer = drumCtx.createBuffer(1, drumCtx.sampleRate * 0.1, drumCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-    noise.buffer = buffer;
-    const noiseFilter = drumCtx.createBiquadFilter();
-    noiseFilter.type = 'highpass';
-    noiseFilter.frequency.value = 5000;
-    const noiseGain = drumCtx.createGain();
-    noiseGain.gain.setValueAtTime(0.2, time);
-    noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
-    noise.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(drumCtx.destination);
-    noise.start(time);
-  }
-
-  // เสียงคองก้า
-  function playConga(time, freq) {
-    const osc = drumCtx.createOscillator();
-    const gain = drumCtx.createGain();
-    osc.connect(gain);
-    gain.connect(drumCtx.destination);
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq, time);
-    osc.frequency.exponentialRampToValueAtTime(freq * 0.7, time + 0.2);
-    gain.gain.setValueAtTime(0.8, time);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-    osc.start(time);
-    osc.stop(time + 0.2);
-  }
-
-  const bgmBtn = document.getElementById('bgm-btn');
-  const rhythmSelector = document.getElementById('rhythm-selector');
-  
-  bgmBtn.onclick = () => {
-    if (isBgmPlaying) {
-      clearInterval(beatInterval);
-      bgmBtn.innerText = "▶️ เปิดจังหวะ";
-      bgmBtn.style.background = "var(--card-bg)";
-    } else {
-      createDrumContext();
-      drumStep = 0;
-      
-      beatInterval = setInterval(() => {
-        const now = drumCtx.currentTime;
-        const currentRhythm = rhythmSelector.value;
-
-        if (currentRhythm === '3cha') {
-          // จังหวะ 3 ช่า: ตึง โป๊ะ ตึง-ตึง โป๊ะ
-          if (drumStep === 0 || drumStep === 6 || drumStep === 8) playKick(now);
-          if (drumStep === 4 || drumStep === 12) playSnare(now);
-          if (drumStep % 2 === 0) playHihat(now); 
-        } else if (currentRhythm === 'conga') {
-          // จังหวะคองก้า: ต่ำ...สูง..กลาง..สูง
-          if (drumStep === 0 || drumStep === 8) {
-            playConga(now, 150); 
-            playKick(now); 
-          }
-          if (drumStep === 4 || drumStep === 12) {
-            playConga(now, 280); 
-          }
-          if (drumStep === 6 || drumStep === 14) {
-            playConga(now, 200); 
-          }
-          if (drumStep % 2 === 0) playHihat(now); 
-        }
-        
-        drumStep = (drumStep + 1) % 16;
-      }, 125); 
-      bgmBtn.innerText = "⏸️ ปิดจังหวะ";
-      bgmBtn.style.background = "rgba(56, 189, 248, 0.5)";
-    }
-    isBgmPlaying = !isBgmPlaying;
-  };
-  // ==========================================
-
-  const startBtn = document.getElementById('start-btn');
-  const nextBtn = document.getElementById('next-btn');
-  const levelDisplay = document.getElementById('level-display');
-  const levelSelector = document.getElementById('level-selector');
+  // โหลดข้อมูลเพลง
   const songSelector = document.getElementById('song-selector');
-  const lyricDisplay = document.getElementById('lyric-display');
-  const targetNoteDisplay = document.getElementById('target-note-display');
+  const songNameDisplay = document.getElementById('song-name-display');
   const targetDetailDisplay = document.getElementById('target-detail-display');
+  const lyricDisplay = document.getElementById('lyric-display');
+  const timerFill = document.getElementById('timer-fill');
+  const timeText = document.getElementById('time-text');
   const feedbackBox = document.getElementById('feedback-box');
   const currentHzDisplay = document.getElementById('current-hz');
   const scoreDisplay = document.getElementById('score-display');
-  const timerFill = document.getElementById('timer-fill');
-  const timeText = document.getElementById('time-text');
+  const offkeyCountDisplay = document.getElementById('offkey-count');
+  const startBtn = document.getElementById('start-btn');
+  const listenBtn = document.getElementById('listen-btn');
 
-  function renderLyrics() {
-    lyricDisplay.innerHTML = "";
-    let linesArray = songs[currentSongIdx].lines;
-    linesArray.forEach((lineText, index) => {
-      let div = document.createElement("div");
-      div.className = "lyric-line";
-      div.id = "lyric-" + index;
-      div.innerText = lineText;
-      lyricDisplay.appendChild(div);
-    });
-  }
-
-  function updateKaraoke(timeLeftLocal) {
-    if (!isRunning) return;
-    let totalTime = levels[currentLevelIdx].time;
-    let elapsedTime = totalTime - timeLeftLocal;
-    let linesArray = songs[currentSongIdx].lines;
-    let totalLines = linesArray.length;
-    
-    let timePerLine = totalTime / totalLines;
-    let currentLineIdx = Math.floor(elapsedTime / timePerLine);
-    
-    if (currentLineIdx >= totalLines) currentLineIdx = totalLines - 1;
-
-    document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
-    let activeLine = document.getElementById('lyric-' + currentLineIdx);
-    if (activeLine) {
-      activeLine.classList.add('active');
-      lyricDisplay.scrollTop = activeLine.offsetTop - (lyricDisplay.offsetHeight / 2) + (activeLine.offsetHeight / 2);
-    }
-  }
-
-  function loadSettings() {
-    let lvl = levels[currentLevelIdx];
-    levelDisplay.innerText = `ด่านที่ ${lvl.id} / ${levels.length}`;
-    levelSelector.value = currentLevelIdx;
-    targetNoteDisplay.innerText = lvl.noteName;
-    targetDetailDisplay.innerText = `(${lvl.detail}) | พิกัดเสียง: ${lvl.targetHz - lvl.tolerance} - ${lvl.targetHz + lvl.tolerance} Hz`;
-    
-    songSelector.value = currentSongIdx;
-    renderLyrics();
-
-    timeLeft = lvl.time;
+  function loadSongSettings() {
+    let song = songList[currentSongIdx];
+    songNameDisplay.innerText = song.title;
+    targetDetailDisplay.innerText = `คีย์สากล: ${song.keyName} | พิกัดเป้าหมาย: ${song.minHz} - ${song.maxHz} Hz`;
+    lyricDisplay.innerText = `"${song.lyrics}"`;
+    timeLeft = song.duration;
     timeText.innerText = `${timeLeft} วินาที`;
     timerFill.style.width = "100%";
-    feedbackBox.innerText = "พร้อมแล้วกดเริ่มเลย!";
+    feedbackBox.innerText = "พร้อมแล้วกดเริ่มจับเสียง!";
     feedbackBox.style.background = "rgba(255,255,255,0.05)";
     feedbackBox.style.color = "white";
     currentHzDisplay.innerText = "-- Hz";
     scoreDisplay.innerText = "0%";
-    startBtn.style.display = "block";
-    startBtn.disabled = false;
-    startBtn.innerText = "🎤 กดเพื่อเริ่มจับเสียง";
-    nextBtn.style.display = "none";
+    offkeyCountDisplay.innerText = "0 ครั้ง";
+    offKeyCount = 0;
   }
-
-  levelSelector.addEventListener('change', (e) => {
-    currentLevelIdx = parseInt(e.target.value);
-    stopGameEarly();
-    loadSettings();
-  });
 
   songSelector.addEventListener('change', (e) => {
     currentSongIdx = parseInt(e.target.value);
-    renderLyrics();
+    loadSongSettings();
   });
 
-  function stopGameEarly() {
-    if (isRunning) {
-      isRunning = false;
-      clearInterval(gameTimer);
-      if (stream) stream.getTracks().forEach(t => t.stop());
-    }
-  }
+  // ปุ่มฟังตัวอย่างเสียงร้อง
+  listenBtn.onclick = () => {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    let song = songList[currentSongIdx];
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(song.targetHz, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 2.0); // เล่นเสียงยาว 2 วินาที
+  };
 
-  loadSettings();
-
+  // ระบบวัดความถี่เสียง
   function autoCorrelate(buf, sampleRate) {
     let SIZE = buf.length, rms = 0;
     for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
@@ -656,8 +377,7 @@
 
   startBtn.onclick = async () => {
     try {
-      totalFrames = 0; goodFrames = 0;
-      levelSelector.disabled = true;
+      totalFrames = 0; goodFrames = 0; offKeyCount = 0;
       songSelector.disabled = true;
 
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -671,24 +391,19 @@
       isRunning = true;
       startBtn.disabled = true;
       startBtn.innerText = "กำลังจับเสียงร้อง...";
-      
-      updateKaraoke(timeLeft);
-      
+
       gameTimer = setInterval(() => {
         timeLeft--;
-        let pct = (timeLeft / levels[currentLevelIdx].time) * 100;
+        let pct = (timeLeft / songList[currentSongIdx].duration) * 100;
         timerFill.style.width = pct + "%";
         timeText.innerText = `${timeLeft} วินาที`;
-
-        updateKaraoke(timeLeft);
 
         if (timeLeft <= 0) endGame();
       }, 1000);
 
       updatePitch();
     } catch (err) {
-      alert("กรุณาอนุญาตการใช้ไมโครโฟนบนเบราว์เซอร์ก่อนเล่นเกมครับ");
-      levelSelector.disabled = false;
+      alert("กรุณาอนุญาตการใช้ไมโครโฟนบนเบราว์เซอร์ก่อนเปิดแอปครับ");
       songSelector.disabled = false;
     }
   };
@@ -697,29 +412,35 @@
     if (!isRunning) return;
     analyser.getFloatTimeDomainData(dataArray);
     let pitch = autoCorrelate(dataArray, audioCtx.sampleRate);
-    let lvl = levels[currentLevelIdx];
+    let song = songList[currentSongIdx];
 
     if (pitch !== -1) {
       let hz = Math.round(pitch);
       currentHzDisplay.innerText = hz + " Hz";
       totalFrames++;
 
-      let minHz = lvl.targetHz - lvl.tolerance;
-      let maxHz = lvl.targetHz + lvl.tolerance;
-
-      if (hz >= minHz && hz <= maxHz) {
-        feedbackBox.innerText = "🎯 เป๊ะมาก! ค้างไว้";
+      // ตรวจจับคีย์เป้าหมายและหาตัวแหกคีย์
+      if (hz >= song.minHz && hz <= song.maxHz) {
+        feedbackBox.innerText = "🎯 เสียงตรงคีย์แล้ว!";
         feedbackBox.style.background = "rgba(34, 197, 94, 0.2)";
         feedbackBox.style.color = "var(--success-color)";
         goodFrames++;
-      } else if (hz > maxHz) {
-        feedbackBox.innerText = "⬇️ สูงไป ลดเสียงลงนิด";
-        feedbackBox.style.background = "rgba(239, 68, 68, 0.2)";
-        feedbackBox.style.color = "var(--danger-color)";
+        lastStateWasOffkey = false;
       } else {
-        feedbackBox.innerText = "⬆️ ต่ำไป ดันเสียงขึ้นอีก";
-        feedbackBox.style.background = "rgba(245, 158, 11, 0.2)";
-        feedbackBox.style.color = "var(--warning-color)";
+        // ตัวแหกคีย์!
+        if (hz > song.maxHz) {
+          feedbackBox.innerText = "⚠️ แหกคีย์! เสียงสูงเกินไป";
+        } else {
+          feedbackBox.innerText = "⚠️ แหกคีย์! เสียงต่ำเกินไป";
+        }
+        feedbackBox.style.background = "rgba(239, 68, 68, 0.25)";
+        feedbackBox.style.color = "var(--danger-color)";
+
+        if (!lastStateWasOffkey) {
+          offKeyCount++;
+          offkeyCountDisplay.innerText = offKeyCount + " ครั้ง";
+          lastStateWasOffkey = true;
+        }
       }
 
       let percent = Math.round((goodFrames / totalFrames) * 100);
@@ -732,54 +453,74 @@
     isRunning = false;
     clearInterval(gameTimer);
     if (stream) stream.getTracks().forEach(t => t.stop());
-    
-    startBtn.style.display = "none";
-    levelSelector.disabled = false;
+
+    startBtn.disabled = false;
+    startBtn.innerText = "🎙️ กดเพื่อเริ่มจับเสียงร้อง";
     songSelector.disabled = false;
-    
+
     let finalScore = totalFrames > 0 ? Math.round((goodFrames / totalFrames) * 100) : 0;
     
     let modal = document.getElementById('result-modal');
     let title = document.getElementById('modal-title');
     let scoreText = document.getElementById('modal-score');
+    let detailText = document.getElementById('modal-detail');
     let closeBtn = document.getElementById('close-modal-btn');
-    
-    scoreText.innerText = finalScore + "%";
 
-    if (finalScore >= 50) {
-      title.innerText = "🎉 ผ่านด่าน!";
+    scoreText.innerText = finalScore + "%";
+    detailText.innerText = `มีช่วงร้องหลุด/แหกคีย์ทั้งหมด ${offKeyCount} ครั้ง`;
+
+    if (finalScore >= 60) {
+      title.innerText = "🎉 เสียงดีตรงคีย์!";
       title.style.color = "var(--success-color)";
-      if (currentLevelIdx < levels.length - 1) {
-        nextBtn.style.display = "block";
-        closeBtn.innerText = "ลุยด่านต่อไป!";
-        closeBtn.onclick = () => {
-          modal.style.display = "none";
-          currentLevelIdx++;
-          loadSettings();
-        };
-      } else {
-        title.innerText = "🏆 เคลียร์เกมสมบูรณ์!";
-        closeBtn.innerText = "เล่นใหม่ตั้งแต่ต้น";
-        closeBtn.onclick = () => {
-          modal.style.display = "none";
-          currentLevelIdx = 0;
-          loadSettings();
-        };
-      }
     } else {
-      title.innerText = "❌ ยังไม่ผ่าน";
+      title.innerText = "❌ หลุดคีย์บ่อย";
       title.style.color = "var(--danger-color)";
-      nextBtn.style.display = "none";
-      startBtn.style.display = "block";
-      closeBtn.innerText = "ลองใหม่อีกครั้ง";
-      closeBtn.onclick = () => {
-        modal.style.display = "none";
-        loadSettings();
-      };
     }
-    
+
+    closeBtn.onclick = () => { modal.style.display = "none"; loadSongSettings(); };
     modal.style.display = "flex";
   }
+
+  // ระบบเสียงกลอง
+  let drumCtx, beatInterval, drumStep = 0, isBgmPlaying = false;
+  const bgmBtn = document.getElementById('bgm-btn');
+  const rhythmSelector = document.getElementById('rhythm-selector');
+
+  bgmBtn.onclick = () => {
+    if (isBgmPlaying) {
+      clearInterval(beatInterval);
+      bgmBtn.innerText = "▶️ เปิดจังหวะ";
+    } else {
+      if (!drumCtx) drumCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (drumCtx.state === 'suspended') drumCtx.resume();
+      drumStep = 0;
+      beatInterval = setInterval(() => {
+        let now = drumCtx.currentTime;
+        let osc = drumCtx.createOscillator();
+        let gain = drumCtx.createGain();
+        osc.connect(gain); gain.connect(drumCtx.destination);
+        
+        if (rhythmSelector.value === '3cha') {
+          if (drumStep % 4 === 0) {
+            osc.frequency.setValueAtTime(120, now);
+            gain.gain.setValueAtTime(0.6, now);
+            osc.start(now); osc.stop(now + 0.1);
+          }
+        } else {
+          if (drumStep % 2 === 0) {
+            osc.frequency.setValueAtTime(200, now);
+            gain.gain.setValueAtTime(0.4, now);
+            osc.start(now); osc.stop(now + 0.1);
+          }
+        }
+        drumStep = (drumStep + 1) % 16;
+      }, 125);
+      bgmBtn.innerText = "⏸️ ปิดจังหวะ";
+    }
+    isBgmPlaying = !isBgmPlaying;
+  };
+
+  loadSongSettings();
 </script>
 
 </body>
