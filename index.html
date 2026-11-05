@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Singing Quest V2 - แอปฝึกร้องเพลง & จับตัวแหกคีย์</title>
+  <title>Singing Quest V2 - คาราโอเกะ & จับตัวแหกคีย์</title>
   <style>
     :root {
       --bg-color: #0f172a;
@@ -33,7 +33,7 @@
       background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
-      padding: 20px;
+      padding: 24px;
       width: 100%;
       max-width: 480px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -57,11 +57,11 @@
       gap: 8px;
     }
 
-    select, .btn-small {
+    select {
       background: var(--card-bg);
       color: white;
       border: 1px solid var(--primary-color);
-      padding: 8px 10px;
+      padding: 10px;
       border-radius: 8px;
       font-size: 14px;
       outline: none;
@@ -78,21 +78,39 @@
     }
 
     .target-title { font-size: 13px; color: var(--text-muted); }
-    .target-note { font-size: 26px; font-weight: 800; color: #fde047; margin: 4px 0; }
+    .target-note { font-size: 24px; font-weight: 800; color: #fde047; margin: 4px 0; }
     .target-detail { font-size: 13px; color: var(--primary-color); }
 
+    /* กล่องเนื้อเพลงแบบคาราโอเกะ */
     .lyric-box {
       background: rgba(0, 0, 0, 0.4);
       border-radius: 12px;
-      padding: 12px;
+      padding: 15px;
       margin-bottom: 15px;
-      min-height: 70px;
+      height: 110px;
+      overflow-y: hidden;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      color: #fde047;
-      font-size: 18px;
+      position: relative;
+      scroll-behavior: smooth;
+    }
+
+    .lyric-line {
+      font-size: 16px;
+      color: var(--text-muted);
+      margin: 8px 0;
+      transition: all 0.3s ease;
+      opacity: 0.4;
+    }
+
+    .lyric-line.active {
+      font-size: 20px;
       font-weight: bold;
+      color: #fde047;
+      opacity: 1;
+      text-shadow: 0 0 10px rgba(253, 224, 71, 0.5);
+      transform: scale(1.05);
     }
 
     .timer-bar {
@@ -176,43 +194,42 @@
   <h2 style="margin-top:0; color: var(--primary-color);">🎤 Singing Quest V2</h2>
   
   <div class="header-controls">
-    <!-- เลือกเพลง (คีย์ ช/ญ ชัดเจน) -->
+    <!-- เลือกคีย์ ชาย / หญิง -->
+    <div class="control-group">
+      <select id="gender-selector">
+        <option value="male">👨 คีย์ผู้ชาย (โทนเสียงต่ำ)</option>
+        <option value="female">👩 คีย์ผู้หญิง (โทนเสียงสูง)</option>
+      </select>
+    </div>
+
+    <!-- เลือกเพลง (3 เพลงหลัก) -->
     <div class="control-group">
       <select id="song-selector">
-        <option value="0">🎵 เพลงเมาคลีล่าสัตว์ (คีย์ ชาย - C3)</option>
-        <option value="1">🎵 เพลงไก่ย่างถูกเผา (คีย์ ชาย - D3)</option>
-        <option value="2">🎵 เพลงรถตุ๊กตุ๊ก (คีย์ หญิง - C4)</option>
-        <option value="3">🎵 เพลงแจวเรือ (คีย์ หญิง - D4)</option>
+        <option value="0">🎵 เพลงไก่ย่างถูกเผา</option>
+        <option value="1">🎵 เพลงรถตุ๊กตุ๊ก</option>
+        <option value="2">🎵 เพลงระบำชาวเกาะ</option>
       </select>
-    </div>
-
-    <!-- เลือกจังหวะ -->
-    <div class="control-group">
-      <select id="rhythm-selector" style="flex: 1;">
-        <option value="3cha">🥁 จังหวะ: 3 ช่า</option>
-        <option value="conga">🪘 จังหวะ: คองก้า</option>
-      </select>
-      <button id="bgm-btn" class="btn-small" style="width: 110px;">▶️ เปิดจังหวะ</button>
     </div>
   </div>
 
-  <!-- ปุ่มฟังตัวอย่างเสียงเมโลดี้ -->
-  <button id="listen-btn" class="btn btn-listen">🎧 ฟังตัวอย่างเสียง (ร้องตามคีย์นี้)</button>
+  <!-- ปุ่มฟังตัวอย่างเสียง -->
+  <button id="listen-btn" class="btn btn-listen">🎧 ฟังตัวอย่างเสียง (คีย์เป้าหมาย)</button>
   
   <div class="target-box" style="margin-top: 10px;">
-    <div class="target-title">คีย์เป้าหมายของเพลงนี้</div>
-    <div class="target-note" id="song-name-display">เมาคลีล่าสัตว์ (คีย์ ช)</div>
-    <div class="target-detail" id="target-detail-display">คีย์: C3 | ช่วงเสียง: 120 - 140 Hz</div>
+    <div class="target-title">เป้าหมายคีย์เพลงนี้</div>
+    <div class="target-note" id="song-name-display">ไก่ย่างถูกเผา</div>
+    <div class="target-detail" id="target-detail-display">คีย์: ชาย | ช่วงเสียง: 135 - 155 Hz</div>
   </div>
 
-  <div class="lyric-box" id="lyric-display">"เมาคลีล่าสัตว์ เมาคลีล่าสัตว์..."</div>
+  <!-- กล่องเนื้อเพลงคาราโอเกะแบบเลื่อนอัตโนมัติ -->
+  <div class="lyric-box" id="lyric-display"></div>
 
   <div class="timer-bar">
     <div class="timer-fill" id="timer-fill"></div>
   </div>
   <div style="text-align: right; font-size: 12px; margin-top: -8px; margin-bottom: 10px;" id="time-text">20 วินาที</div>
 
-  <!-- กล่องแสดงตัวแหกคีย์ Real-time -->
+  <!-- กล่องแสดงผลแหกคีย์ Real-time -->
   <div class="feedback-box" id="feedback-box">พร้อมแล้วกดเริ่มจับเสียง!</div>
   
   <div class="metrics">
@@ -244,51 +261,57 @@
 </div>
 
 <script>
-  // รายการเพลงที่มีคีย์ ชาย/หญิง ชัดเจน
-  const songList = [
+  // ฐานข้อมูล 3 เพลงหลัก แยกช่วง Hz สำหรับ ชาย / หญิง ชัดเจน
+  const songsData = [
     {
       id: 0,
-      title: "เมาคลีล่าสัตว์ (คีย์ ชาย)",
-      keyName: "C3 (ชาย)",
-      targetHz: 130,
-      minHz: 120,
-      maxHz: 140,
-      lyrics: "เมาคลีล่าสัตว์... ฆ่าแชร์คาน...",
-      duration: 20
+      title: "ไก่ย่างถูกเผา",
+      duration: 20,
+      keys: {
+        male: { targetHz: 147, minHz: 135, maxHz: 157, label: "D3 (ชาย)" },
+        female: { targetHz: 294, minHz: 280, maxHz: 308, label: "D4 (หญิง)" }
+      },
+      lines: [
+        "ไก่ย่างถูกเผา ไก่ย่างถูกเผา",
+        "มันจะถูกไม้เสียบ (อู๊ย!)",
+        "เสียบตูดซ้าย เสียบตูดขวา",
+        "ร้อนจริง ๆ ร้อนจริง ๆ ร้อนจริง ๆ"
+      ]
     },
     {
       id: 1,
-      title: "ไก่ย่างถูกเผา (คีย์ ชาย)",
-      keyName: "D3 (ชาย)",
-      targetHz: 147,
-      minHz: 137,
-      maxHz: 157,
-      lyrics: "ไก่ย่างถูกเผา... มันจะถูกไม้เสียบ...",
-      duration: 20
+      title: "รถตุ๊กตุ๊ก",
+      duration: 20,
+      keys: {
+        male: { targetHz: 130, minHz: 120, maxHz: 140, label: "C3 (ชาย)" },
+        female: { targetHz: 262, minHz: 248, maxHz: 276, label: "C4 (หญิง)" }
+      },
+      lines: [
+        "ขับรถตุ๊กตุ๊ก บรรทุกถ่าน",
+        "รถตุ๊กตุ๊กชักกระตุก",
+        "ชักกระตุก ชักกระตุก",
+        "ขับรถตุ๊กตุ๊ก บรรทุกถ่าน"
+      ]
     },
     {
       id: 2,
-      title: "รถตุ๊กตุ๊ก (คีย์ หญิง)",
-      keyName: "C4 (หญิง)",
-      targetHz: 262,
-      minHz: 248,
-      maxHz: 276,
-      lyrics: "ขับรถตุ๊กตุ๊ก... บรรทุกถ่าน...",
-      duration: 20
-    },
-    {
-      id: 3,
-      title: "แจวเรือ (คีย์ หญิง)",
-      keyName: "D4 (หญิง)",
-      targetHz: 294,
-      minHz: 280,
-      maxHz: 308,
-      lyrics: "แจวมาแจวจ้ำจึก... น้ำนิ่งไหลลึก...",
-      duration: 20
+      title: "ระบำชาวเกาะ",
+      duration: 20,
+      keys: {
+        male: { targetHz: 165, minHz: 152, maxHz: 175, label: "E3 (ชาย)" },
+        female: { targetHz: 330, minHz: 315, maxHz: 345, label: "E4 (หญิง)" }
+      },
+      lines: [
+        "รำระบำชาวเกาะ",
+        "ไพเราะเสนาะจับใจ",
+        "สายน้ำหลั่งไหล สายน้ำหลั่งไหล",
+        "กระทบหาดทรายดังครืนครืน"
+      ]
     }
   ];
 
   let currentSongIdx = 0;
+  let currentGender = 'male';
   let audioCtx, analyser, stream, dataArray;
   let isRunning = false;
   let gameTimer = null;
@@ -298,7 +321,7 @@
   let offKeyCount = 0;
   let lastStateWasOffkey = false;
 
-  // โหลดข้อมูลเพลง
+  const genderSelector = document.getElementById('gender-selector');
   const songSelector = document.getElementById('song-selector');
   const songNameDisplay = document.getElementById('song-name-display');
   const targetDetailDisplay = document.getElementById('target-detail-display');
@@ -312,11 +335,49 @@
   const startBtn = document.getElementById('start-btn');
   const listenBtn = document.getElementById('listen-btn');
 
+  // สร้างองค์ประกอบเนื้อเพลงสำหรับคาราโอเกะ
+  function renderLyrics() {
+    lyricDisplay.innerHTML = "";
+    let linesArray = songsData[currentSongIdx].lines;
+    linesArray.forEach((lineText, index) => {
+      let div = document.createElement("div");
+      div.className = "lyric-line";
+      div.id = "lyric-" + index;
+      div.innerText = lineText;
+      lyricDisplay.appendChild(div);
+    });
+  }
+
+  // อัปเดตการไฮไลต์และเลื่อนเนื้อเพลงตามเวลาที่เหลือ
+  function updateKaraoke(timeLeftLocal) {
+    if (!isRunning) return;
+    let totalTime = songsData[currentSongIdx].duration;
+    let elapsedTime = totalTime - timeLeftLocal;
+    let linesArray = songsData[currentSongIdx].lines;
+    let totalLines = linesArray.length;
+    
+    let timePerLine = totalTime / totalLines;
+    let currentLineIdx = Math.floor(elapsedTime / timePerLine);
+    if (currentLineIdx >= totalLines) currentLineIdx = totalLines - 1;
+
+    document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+    let activeLine = document.getElementById('lyric-' + currentLineIdx);
+    if (activeLine) {
+      activeLine.classList.add('active');
+      lyricDisplay.scrollTop = activeLine.offsetTop - (lyricDisplay.offsetHeight / 2) + (activeLine.offsetHeight / 2);
+    }
+  }
+
+  // โหลดค่าตามเพลงและคีย์ที่เลือก
   function loadSongSettings() {
-    let song = songList[currentSongIdx];
+    let song = songsData[currentSongIdx];
+    let keyInfo = song.keys[currentGender];
+    
     songNameDisplay.innerText = song.title;
-    targetDetailDisplay.innerText = `คีย์สากล: ${song.keyName} | พิกัดเป้าหมาย: ${song.minHz} - ${song.maxHz} Hz`;
-    lyricDisplay.innerText = `"${song.lyrics}"`;
+    targetDetailDisplay.innerText = `คีย์: ${keyInfo.label} | ช่วงเสียง: ${keyInfo.minHz} - ${keyInfo.maxHz} Hz`;
+    
+    renderLyrics();
+    
     timeLeft = song.duration;
     timeText.innerText = `${timeLeft} วินาที`;
     timerFill.style.width = "100%";
@@ -329,30 +390,34 @@
     offKeyCount = 0;
   }
 
+  genderSelector.addEventListener('change', (e) => {
+    currentGender = e.target.value;
+    loadSongSettings();
+  });
+
   songSelector.addEventListener('change', (e) => {
     currentSongIdx = parseInt(e.target.value);
     loadSongSettings();
   });
 
-  // ปุ่มฟังตัวอย่างเสียงร้อง
+  // ปุ่มกดฟังตัวอย่างเสียงคีย์เป้าหมาย
   listenBtn.onclick = () => {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
-    let song = songList[currentSongIdx];
+    let keyInfo = songsData[currentSongIdx].keys[currentGender];
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(song.targetHz, ctx.currentTime);
+    osc.frequency.setValueAtTime(keyInfo.targetHz, ctx.currentTime);
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     
     osc.connect(gain);
     gain.connect(ctx.destination);
-    
     osc.start();
-    osc.stop(ctx.currentTime + 2.0); // เล่นเสียงยาว 2 วินาที
+    osc.stop(ctx.currentTime + 1.8);
   };
 
-  // ระบบวัดความถี่เสียง
+  // อัลกอริทึม Auto-correlation หาค่า Hz
   function autoCorrelate(buf, sampleRate) {
     let SIZE = buf.length, rms = 0;
     for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
@@ -378,6 +443,7 @@
   startBtn.onclick = async () => {
     try {
       totalFrames = 0; goodFrames = 0; offKeyCount = 0;
+      genderSelector.disabled = true;
       songSelector.disabled = true;
 
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -392,11 +458,15 @@
       startBtn.disabled = true;
       startBtn.innerText = "กำลังจับเสียงร้อง...";
 
+      updateKaraoke(timeLeft);
+
       gameTimer = setInterval(() => {
         timeLeft--;
-        let pct = (timeLeft / songList[currentSongIdx].duration) * 100;
+        let pct = (timeLeft / songsData[currentSongIdx].duration) * 100;
         timerFill.style.width = pct + "%";
         timeText.innerText = `${timeLeft} วินาที`;
+
+        updateKaraoke(timeLeft);
 
         if (timeLeft <= 0) endGame();
       }, 1000);
@@ -404,6 +474,7 @@
       updatePitch();
     } catch (err) {
       alert("กรุณาอนุญาตการใช้ไมโครโฟนบนเบราว์เซอร์ก่อนเปิดแอปครับ");
+      genderSelector.disabled = false;
       songSelector.disabled = false;
     }
   };
@@ -412,23 +483,21 @@
     if (!isRunning) return;
     analyser.getFloatTimeDomainData(dataArray);
     let pitch = autoCorrelate(dataArray, audioCtx.sampleRate);
-    let song = songList[currentSongIdx];
+    let keyInfo = songsData[currentSongIdx].keys[currentGender];
 
     if (pitch !== -1) {
       let hz = Math.round(pitch);
       currentHzDisplay.innerText = hz + " Hz";
       totalFrames++;
 
-      // ตรวจจับคีย์เป้าหมายและหาตัวแหกคีย์
-      if (hz >= song.minHz && hz <= song.maxHz) {
+      if (hz >= keyInfo.minHz && hz <= keyInfo.maxHz) {
         feedbackBox.innerText = "🎯 เสียงตรงคีย์แล้ว!";
         feedbackBox.style.background = "rgba(34, 197, 94, 0.2)";
         feedbackBox.style.color = "var(--success-color)";
         goodFrames++;
         lastStateWasOffkey = false;
       } else {
-        // ตัวแหกคีย์!
-        if (hz > song.maxHz) {
+        if (hz > keyInfo.maxHz) {
           feedbackBox.innerText = "⚠️ แหกคีย์! เสียงสูงเกินไป";
         } else {
           feedbackBox.innerText = "⚠️ แหกคีย์! เสียงต่ำเกินไป";
@@ -456,6 +525,7 @@
 
     startBtn.disabled = false;
     startBtn.innerText = "🎙️ กดเพื่อเริ่มจับเสียงร้อง";
+    genderSelector.disabled = false;
     songSelector.disabled = false;
 
     let finalScore = totalFrames > 0 ? Math.round((goodFrames / totalFrames) * 100) : 0;
@@ -480,45 +550,6 @@
     closeBtn.onclick = () => { modal.style.display = "none"; loadSongSettings(); };
     modal.style.display = "flex";
   }
-
-  // ระบบเสียงกลอง
-  let drumCtx, beatInterval, drumStep = 0, isBgmPlaying = false;
-  const bgmBtn = document.getElementById('bgm-btn');
-  const rhythmSelector = document.getElementById('rhythm-selector');
-
-  bgmBtn.onclick = () => {
-    if (isBgmPlaying) {
-      clearInterval(beatInterval);
-      bgmBtn.innerText = "▶️ เปิดจังหวะ";
-    } else {
-      if (!drumCtx) drumCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (drumCtx.state === 'suspended') drumCtx.resume();
-      drumStep = 0;
-      beatInterval = setInterval(() => {
-        let now = drumCtx.currentTime;
-        let osc = drumCtx.createOscillator();
-        let gain = drumCtx.createGain();
-        osc.connect(gain); gain.connect(drumCtx.destination);
-        
-        if (rhythmSelector.value === '3cha') {
-          if (drumStep % 4 === 0) {
-            osc.frequency.setValueAtTime(120, now);
-            gain.gain.setValueAtTime(0.6, now);
-            osc.start(now); osc.stop(now + 0.1);
-          }
-        } else {
-          if (drumStep % 2 === 0) {
-            osc.frequency.setValueAtTime(200, now);
-            gain.gain.setValueAtTime(0.4, now);
-            osc.start(now); osc.stop(now + 0.1);
-          }
-        }
-        drumStep = (drumStep + 1) % 16;
-      }, 125);
-      bgmBtn.innerText = "⏸️ ปิดจังหวะ";
-    }
-    isBgmPlaying = !isBgmPlaying;
-  };
 
   loadSongSettings();
 </script>
